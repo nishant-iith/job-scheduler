@@ -39,9 +39,29 @@ void FCFSScheduler::setJobs(const std::vector<Job>& jobs) {
 
 std::string FCFSScheduler::getGanttChart() const {
     std::ostringstream oss;
-    oss << "Gantt Chart:\n|";
+    // ANSI color codes for jobs
+    const std::string colors[] = { "\033[41m", "\033[42m", "\033[43m", "\033[44m", "\033[45m", "\033[46m", "\033[47m" };
+    oss << "Gantt Chart:\n";
+    oss << "Time:   ";
+    int time = 0;
     for (const auto& job : scheduledJobs) {
-        oss << " " << job.getName() << " |";
+        oss << std::setw(4) << time << " ";
+        time += job.burstTime;
+    }
+    oss << std::setw(4) << time << "\n";
+    oss << "        ";
+    int colorIdx = 0;
+    time = 0;
+    for (const auto& job : scheduledJobs) {
+        std::string color = colors[colorIdx % 7];
+        oss << color << " " << job.getName() << " " << "\033[0m" << " ";
+        colorIdx++;
+        time += job.burstTime;
+    }
+    oss << "\n";
+    oss << "Labels: ";
+    for (const auto& job : scheduledJobs) {
+        oss << "[" << job.getName() << ":A=" << job.getArrivalTime() << ",B=" << job.burstTime << "] ";
     }
     oss << "\n";
     return oss.str();
@@ -51,8 +71,10 @@ std::string FCFSScheduler::getTimelineLog() const {
     std::ostringstream oss;
     oss << "Timeline Log:\n";
     for (const auto& entry : timelineLog) {
+        // Example entry: "JobA: Arrived at 0, Started at 2, Completed at 5"
         oss << entry << "\n";
     }
+    oss << "Legend: [A]=Arrival, [S]=Start, [C]=Completion, [P]=Preemption\n";
     return oss.str();
 }
 
@@ -74,5 +96,14 @@ std::string FCFSScheduler::getStatistics() const {
         oss << "Avg WT: " << totalWT / count << "\n";
         oss << "Avg TT: " << totalTT / count << "\n";
     }
+    // Aggregate metrics
+    oss << "Total Jobs: " << count << "\n";
+    oss << "Total Burst Time: ";
+    int totalBurst = 0;
+    for (const auto& job : scheduledJobs) totalBurst += job.burstTime;
+    oss << totalBurst << "\n";
+    // Algorithm comparison placeholder
+    oss << "Algorithm: FCFS\n";
+    oss << "Compare with other algorithms in Statistics menu.\n";
     return oss.str();
 }

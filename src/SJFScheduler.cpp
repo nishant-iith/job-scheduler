@@ -48,9 +48,28 @@ void SJFScheduler::setJobs(const std::vector<Job>& jobs) {
 
 std::string SJFScheduler::getGanttChart() const {
     std::ostringstream oss;
-    oss << "Gantt Chart:\n|";
+    const std::string colors[] = { "\033[41m", "\033[42m", "\033[43m", "\033[44m", "\033[45m", "\033[46m", "\033[47m" };
+    oss << "Gantt Chart:\n";
+    oss << "Time:   ";
+    int time = 0;
     for (const auto& job : scheduledJobs) {
-        oss << " " << job.getName() << " |";
+        oss << std::setw(4) << time << " ";
+        time += job.burstTime;
+    }
+    oss << std::setw(4) << time << "\n";
+    oss << "        ";
+    int colorIdx = 0;
+    time = 0;
+    for (const auto& job : scheduledJobs) {
+        std::string color = colors[colorIdx % 7];
+        oss << color << " " << job.getName() << " " << "\033[0m" << " ";
+        colorIdx++;
+        time += job.burstTime;
+    }
+    oss << "\n";
+    oss << "Labels: ";
+    for (const auto& job : scheduledJobs) {
+        oss << "[" << job.getName() << ":A=" << job.getArrivalTime() << ",B=" << job.burstTime << "] ";
     }
     oss << "\n";
     return oss.str();
@@ -62,6 +81,7 @@ std::string SJFScheduler::getTimelineLog() const {
     for (const auto& entry : timelineLog) {
         oss << entry << "\n";
     }
+    oss << "Legend: [A]=Arrival, [S]=Start, [C]=Completion, [P]=Preemption\n";
     return oss.str();
 }
 
@@ -83,5 +103,12 @@ std::string SJFScheduler::getStatistics() const {
         oss << "Avg WT: " << totalWT / count << "\n";
         oss << "Avg TT: " << totalTT / count << "\n";
     }
+    oss << "Total Jobs: " << count << "\n";
+    oss << "Total Burst Time: ";
+    int totalBurst = 0;
+    for (const auto& job : scheduledJobs) totalBurst += job.burstTime;
+    oss << totalBurst << "\n";
+    oss << "Algorithm: SJF\n";
+    oss << "Compare with other algorithms in Statistics menu.\n";
     return oss.str();
 }

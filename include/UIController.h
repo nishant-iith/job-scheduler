@@ -9,17 +9,26 @@
 #include "Job.h"
 #include <vector>
 #include <string>
+#include <map>
 #include <memory>
 
 class UIController {
 public:
     UIController();
     void runSession();
+    void loadSchedulerPlugin(const std::string& path);
+    void saveSession(const std::string& filename);
+    void loadSession(const std::string& filename);
+    void setTheme(const std::string& themeName);
+    void setUserSetting(const std::string& key, const std::string& value);
 
 private:
     std::vector<Job> jobs;
     std::unique_ptr<Scheduler> scheduler;
+    std::string pluginPath;
     int currentAlgorithm; // 0:FCFS, 1:SJF, 2:RR, 3:Priority
+    std::string theme;
+    std::map<std::string, std::string> userSettings;
 
     // Menu methods
     void showMainMenu();

@@ -1,3 +1,10 @@
+#include "../include/SchedulerFactory.h"
+#include "../include/UIController.h"
+
+void UIController::loadSchedulerPlugin(const std::string& path) {
+    pluginPath = path;
+    scheduler = SchedulerFactory::loadPlugin(path);
+}
 // UIController.cpp
 #include "../include/UIController.h"
 #include <iostream>
@@ -263,4 +270,52 @@ void UIController::pause() {
 
 void UIController::error(const std::string& msg) {
     std::cout << "Error: " << msg << "\n";
+}
+// Session persistence implementation
+#include <fstream>
+#include <sstream>
+
+void UIController::saveSession(const std::string& filename) {
+    std::ofstream out(filename);
+    out << "algorithm," << currentAlgorithm << "\n";
+    out << "pluginPath," << pluginPath << "\n";
+    out << "jobs\n";
+    for (const auto& job : jobs) {
+        out << job.serialize() << "\n"; // Assumes Job::serialize() returns CSV string
+    }
+    // Optionally add results/statistics here
+}
+
+void UIController::loadSession(const std::string& filename) {
+    std::ifstream in(filename);
+    std::string line;
+    jobs.clear();
+    while (std::getline(in, line)) {
+        if (line.rfind("algorithm,", 0) == 0) {
+            currentAlgorithm = std::stoi(line.substr(10));
+        } else if (line.rfind("pluginPath,", 0) == 0) {
+            pluginPath = line.substr(11);
+        } else if (line == "jobs") {
+            while (std::getline(in, line) && !line.empty()) {
+                Job job;
+                job.deserialize(line); // Assumes Job::deserialize(const std::string&)
+                jobs.push_back(job);
+            }
+        }
+    }
+    if (!pluginPath.empty()) {
+        loadSchedulerPlugin(pluginPath);
+    } else {
+        switchAlgorithm(currentAlgorithm);
+    }
+}
+// Theme and settings customization
+void UIController::setTheme(const std::string& themeName) {
+    theme = themeName;
+    // Apply theme to UI output (colors, etc.)
+}
+
+void UIController::setUserSetting(const std::string& key, const std::string& value) {
+    userSettings[key] = value;
+    // Apply setting if needed (e.g., default algorithm, time quantum)
 }

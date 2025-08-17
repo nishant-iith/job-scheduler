@@ -1,10 +1,129 @@
-# CPU Job Scheduler (C++ CLI Project)
+# Advanced C++ Job Scheduler
 
-## Overview
-A modular C++ simulation of CPU job scheduling algorithms (FCFS, SJF, Round Robin, Priority with aging). Includes CLI, job data file input, performance metrics, and Gantt chart output.
+## Project Overview
 
-## File Structure
+`AdvancedJobScheduler.cpp` is a single-file, modular C++ application simulating advanced CPU job scheduling algorithms. It features a robust CLI menu, dynamic job management, and a clear separation of concerns via classes such as `Scheduler`, `Job`, and `UIController`.
+
+### Key Features
+
+- **Multiple Scheduling Algorithms:** FCFS, SJF (Preemptive), Round Robin, Priority (Preemptive with aging).
+- **Interactive CLI Menu:** Select algorithms, load job files, view results, and navigate options.
+- **Dynamic Job Management:** Add, edit, and remove jobs at runtime.
+- **Performance Metrics:** Average Turnaround Time, Average Waiting Time, and Gantt chart visualization.
+- **Extensible Design:** Easily add new algorithms by extending the `Scheduler` class.
+- **Single-File Simplicity:** All logic contained in `AdvancedJobScheduler.cpp` for easy compilation and portability.
+
+---
+
+## Usage Instructions
+
+### Compile
+
+```sh
+g++ -std=c++17 AdvancedJobScheduler.cpp -o AdvancedJobScheduler
 ```
+
+### Run
+
+```sh
+./AdvancedJobScheduler
+```
+
+- Follow the interactive CLI/menu prompts to select scheduling algorithms, load job data, and view results.
+- Job data can be loaded from a CSV file (see example below) or entered manually via the menu.
+
+---
+
+## Example Job File (`jobs.csv`)
+
+```csv
+id,arrival,burst,priority
+1,0,5,2
+2,2,3,1
+3,4,1,3
+4,6,2,2
+```
+
+---
+
+## Class Diagram
+
+```mermaid
+classDiagram
+    class Scheduler {
+        +scheduleJobs()
+        +getMetrics()
+    }
+    class Job {
+        +id
+        +arrival
+        +burst
+        +priority
+    }
+    class UIController {
+        +displayMenu()
+        +handleInput()
+    }
+    class JobLoader {
+        +loadFromCSV()
+    }
+    Scheduler <|-- FCFSScheduler
+    Scheduler <|-- SJFScheduler
+    Scheduler <|-- RoundRobinScheduler
+    Scheduler <|-- PriorityScheduler
+    UIController --> Scheduler
+    UIController --> JobLoader
+    Scheduler "1" --> "*" Job
+```
+
+---
+
+## CLI/Menu Flowchart
+
+```mermaid
+flowchart TD
+    Start([Start])
+    Menu{{Main Menu}}
+    Alg[Select Algorithm]
+    Load[Load Job File]
+    Manual[Enter Jobs Manually]
+    Run[Run Scheduler]
+    Metrics[Show Metrics]
+    Gantt[Gantt Chart]
+    Again{Run Again?}
+    Exit([Exit])
+
+    Start --> Menu
+    Menu --> Alg
+    Menu --> Load
+    Menu --> Manual
+    Alg --> Run
+    Load --> Run
+    Manual --> Run
+    Run --> Metrics
+    Metrics --> Gantt
+    Gantt --> Again
+    Again -->|Yes| Menu
+    Again -->|No| Exit
+```
+
+---
+
+## Extending
+
+To add new scheduling algorithms, extend the `Scheduler` class and update the CLI menu logic in `UIController`.
+
+---
+
+## License
+
+MIT
+
+---
+
+## Legacy Project Structure (for reference)
+
+```text
 Scheduler/
 ├── src/
 │   ├── Job.cpp
@@ -25,43 +144,3 @@ Scheduler/
 ├── data/
 │   └── jobs.csv
 ├── README.md
-```
-
-## Features
-- FCFS, SJF (Preemptive), Round Robin, Priority (Preemptive with aging)
-- CLI for algorithm selection and job file input
-- Performance metrics: Average Turnaround Time, Average Waiting Time
-- Text-based Gantt chart output
-
-## How to Build & Run
-1. Compile all `.cpp` files in `src/` with a C++17+ compiler:
-   ```
-   g++ -std=c++17 src/*.cpp -Iinclude -o scheduler_cli
-   ```
-2. Run the executable, providing the scheduler type and job file path as arguments:
-   ```
-   ./scheduler_cli --algorithm FCFS --input data/jobs.csv
-   ./scheduler_cli --algorithm SJF --input data/jobs.csv
-   ./scheduler_cli --algorithm RR --input data/jobs.csv --quantum 2
-   ./scheduler_cli --algorithm PRIORITY --input data/jobs.csv
-   ```
-
-## Example Job File (`data/jobs.csv`)
-```
-id,arrival,burst,priority
-1,0,5,2
-2,2,3,1
-3,4,1,3
-4,6,2,2
-```
-
-## Usage
-- Select the scheduling algorithm using `--algorithm`.
-- Provide the job data file using `--input`.
-- For Round Robin, specify the time quantum using `--quantum`.
-
-## Extending
-Add new scheduling algorithms by implementing the `Scheduler` interface and updating `main.cpp`.
-
-## License
-MIT
